@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>doTERRA Follow-up Manager</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #000000 50%, #0f172a 100%);
+            color: #e5e7eb;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .container { max-width: 1280px; margin: 0 auto; }
+        .card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(to right, #10b981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        .subtitle { color: #9ca3af; font-size: 14px; }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: linear-gradient(to right, #10b981, #059669);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 20px -3px rgba(16, 185, 129, 0.4); }
+        .btn-danger {
+            background: linear-gradient(to right, #dc2626, #b91c1c);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.3);
+        }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 15px 20px -3px rgba(220, 38, 38, 0.4); }
+        .btn-secondary {
+            background: #374151;
+            color: #e5e7eb;
+        }
+        .btn-secondary:hover { background: #4b5563; }
+        .btn:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .upload-area {
+            border: 2px dashed #4b5563;
+            border-radius: 12px;
+            padding: 48px;
+            text-align: center;
+            background: rgba(31, 41, 55, 0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 32px;
+        }
+        .upload-area:hover {
+            border-color: #10b981;
+            background: rgba(31, 41, 55, 0.8);
+        }
+        .customer-card {
+            border: 2px solid #374151;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: rgba(31, 41, 55, 0.5);
+            transition: all 0.3s;
+        }
+        .customer-card.selected {
+            border-color: #10b981;
+            background: rgba(31, 41, 55, 0.8);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
+        }
+        .customer-card:hover { border-color: #4b5563; }
+        .customer-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .customer-details {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .customer-name { font-size: 18px; font-weight: bold; color: #f3f4f6; }
+        .customer-email { font-size: 14px; color: #9ca3af; }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-retail { background: #fed7aa; color: #9a3412; }
+        .badge-wholesale { background: #bfdbfe; color: #1e3a8a; }
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            padding: 16px;
+        }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 768px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .spinner {
+            border: 3px solid #374151;
+            border-top: 3px solid #10b981;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 32px; }
+        .email-preview {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 24px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+            color: #d1d5db;
+            margin: 24px 0;
+        }
+        .status-connected {
+            background: linear-gradient(to right, #10b981, #059669);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .hidden { display: none !important; }
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #10b981;
+        }
+        .country-info { font-size: 12px; color: #6b7280; margin-top: 4px; }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+        .close-btn {
+            color: #9ca3af;
+            cursor: pointer;
+            transition: color 0.3s;
+            font-size: 24px;
+            line-height: 1;
+            border: none;
+            background: none;
+        }
+        .close-btn:hover { color: #e5e7eb; }
+        .modal-actions { display: flex; gap: 16px; margin-top: 24px; }
+        .modal-actions .btn { flex: 1; justify-content: center; }
+        @media (max-width: 768px) {
+            .header { flex-direction: column; align-items: stretch; }
+            .customer-info { flex-direction: column; align-items: stretch; }
+            .customer-actions { display: flex; flex-direction: column; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <div>
+                    <h1>🌿 doTERRA Follow-up Manager</h1>
+                    <p class="subtitle">Automatizza il follow-up dei tuoi clienti</p>
+                </div>
+                <div id="gmailStatus">
+                    <button class="btn btn-danger" onclick="connectGmail()">
+                        🔑 Connetti Gmail
+                    </button>
+                </div>
+            </div>
+
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div style="font-size: 48px; margin-bottom: 16px;">📤</div>
+                <p style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #e5e7eb;">Carica screenshot clienti doTERRA</p>
+                <p style="font-size: 14px; color: #9ca3af;">Clicca o trascina l'immagine qui</p>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p style="color: #d1d5db;">Estrazione dati in corso...</p>
+            </div>
+
+            <div id="customerList" class="hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+                    <h2 style="font-size: 24px; font-weight: bold; color: #f3f4f6;">Clienti Estratti (<span id="customerCount">0</span>)</h2>
+                    <button class="btn btn-primary" onclick="sendEmails()" id="sendBtn">
+                        📧 Invia Email Selezionate
+                    </button>
+                </div>
+                <div id="customers"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 id="previewName" style="font-size: 24px; font-weight: bold; color: #f3f4f6;"></h3>
+                    <p id="previewEmail" style="color: #9ca3af;"></p>
+                    <p id="previewInfo" class="country-info"></p>
+                </div>
+                <button class="close-btn" onclick="closePreview()">✕</button>
+            </div>
+            <div id="previewLoading" class="loading">
+                <div class="spinner"></div>
+                <p style="color: #d1d5db;">Traduzione in corso...</p>
+            </div>
+            <div id="previewContent" class="email-preview hidden"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closePreview()">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CLIENT_ID = '741410065760-j551njbvu8djqoi1euim5log6ctugslm.apps.googleusercontent.com';
+        const SCOPE = 'https://www.googleapis.com/auth/gmail.send';
+        
+        let customers = [];
+        let accessToken = null;
+        let selectedCustomers = new Set();
+
+        const countryToLanguage = {
+            'FRA': 'French', 'POL': 'Polish', 'AUT': 'German', 'DEU': 'German',
+            'CAN': 'English', 'USA': 'English', 'BGR': 'Bulgarian', 'HUN': 'Hungarian',
+            'ITA': 'Italian', 'ESP': 'Spanish', 'GBR': 'English', 'UK': 'English'
+        };
+
+        const emailTemplates = {
+            retail: `Hi [name]👋 
+I'm Alessandro Brozzi, your official doTERRA Wellness Advocate, hope you're doing great!
+Just checking in: have you noticed any positive effects from your doTERRA products?
+I also noticed you're not yet officially registered. 
+There's a free 25% discount on ALL Products waiting for you—plus a free product every month within the monthly order (called LRP)
+If you're curious about earning with doTERRA, I made a quick 6-minute video explaining how it works. Right now, I'm personally running Google Ads to grow the business—and you can benefit too.
+By switching to an Advocate account (free for both new and current customers), you'll start getting free customers on your team, and I'll guide you if you want to grow with it.
+Check out the video here, all details are in the description:
+👉 https://youtu.be/5sHhyJ98_pc
+And if you want to understand how I personally use Google Ads to automate the process, you can check my page here:
+👉 www.hybridmodelengine.com
+Talk soon,
+Alessandro Brozzi 🌿`,
+            wholesale: `Hi [name]👋
+Nice to meet you, I hope you're doing well!
+I'm Alessandro Brozzi, your official doTERRA Wellness Advocate. Welcome to our Team ☺️✨
+Just wanted to check in—have you noticed any positive changes with your doTERRA products?
+Quick heads up: 
+Now that you've logged into your account, your 25% lifetime discount on all doTERRA products is already active, no extra steps needed!
+You also unlock the chance to receive a free product every month by joining the Loyalty Rewards Program (LRP).
+What's LRP?
+It's a flexible monthly order that rewards you with product points (cashback) on every purchase—up to 30%!
+It's the best way to save more, earn freebies, and access exclusive promos reserved for loyal customers.
+Also, if you're even a bit curious about turning doTERRA into an extra income stream, I made a quick 6-minute video explaining how it works.
+Right now, I'm running Google Ads to bring in new customers—and if you switch to an Advocate account from your doTerra homepage FOR FREE, those new customers can be placed directly on your team.
+I'll personally support you if you decide to give it a try!
+Here's the video—check the description for all the details:
+👉 https://youtu.be/5sHhyJ98_pc 
+And if you want to understand how I personally use Google Ads to automate the process, you can check my page here:
+👉 www.hybridmodelengine.com
+Talk soon,
+Alessandro Brozzi 🌿`
+        };
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('access_token');
+            
+            if (token) {
+                accessToken = token;
+                updateGmailStatus(true);
+                window.history.replaceState({}, document.title, window.location.pathname);
+                alert('✅ Gmail connesso con successo! Ora puoi caricare gli screenshot e mandare le email.');
+            }
+
+            const hash = window.location.hash;
+            if (hash.includes('access_token')) {
+                const hashToken = hash.match(/access_token=([^&]*)/);
+                if (hashToken) {
+                    accessToken = hashToken[1];
+                    updateGmailStatus(true);
+                    window.location.hash = '';
+                    alert('✅ Gmail connesso con successo! Ora puoi caricare gli screenshot e mandare le email.');
+                }
+            }
+        };
+
+        function connectGmail() {
+            const redirectUri = window.location.href.split('?')[0].split('#')[0];
+            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+                `client_id=${CLIENT_ID}&` +
+                `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+                `response_type=token&` +
+                `scope=${encodeURIComponent(SCOPE)}&` +
+                `prompt=consent`;
+            window.location.href = authUrl;
+        }
+
+        function updateGmailStatus(connected) {
+            document.getElementById('gmailStatus').innerHTML = connected 
+                ? '<div class="status-connected">✓ Gmail Connesso</div>'
+                : '<button class="btn btn-danger" onclick="connectGmail()">🔑 Connetti Gmail</button>';
+        }
+
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('customerList').classList.add('hidden');
+            
+            try {
+                const base64 = await fileToBase64(file);
+                
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 4000,
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                { type: 'image', source: { type: 'base64', media_type: file.type, data: base64 } },
+                                { type: 'text', text: `You are looking at a doTERRA customer spreadsheet. Read it VERY CAREFULLY row by row.
+
+Extract customer data and return ONLY a JSON array:
+[{"name": "Full Name", "email": "email@example.com", "memberType": "Retail Customer" or "Wholesale Customer", "country": "COUNTRY_CODE"}]
+
+CRITICAL RULES:
+1. Read each row LEFT to RIGHT carefully
+2. Extract the EXACT name from the Name column
+3. Extract the EXACT email from the Email column
+4. Member Type must be exactly "Retail Customer" or "Wholesale Customer"
+5. Extract country code (ITA, FRA, DEU, POL, etc.)
+6. Extract ALL visible rows
+7. Return valid JSON only, no markdown, no explanation` }
+                            ]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                const text = data.content.find(c => c.type === 'text')?.text || '';
+                customers = JSON.parse(text.replace(/```json|```/g, '').trim());
+                selectedCustomers = new Set(customers.map((_, i) => i));
+                
+                displayCustomers();
+            } catch (error) {
+                alert('Errore nell\'estrazione: ' + error.message);
+                console.error(error);
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function displayCustomers() {
+            const container = document.getElementById('customers');
+            document.getElementById('customerCount').textContent = customers.length;
+            document.getElementById('customerList').classList.remove('hidden');
+            
+            container.innerHTML = customers.map((c, i) => `
+                <div class="customer-card ${selectedCustomers.has(i) ? 'selected' : ''}" id="card-${i}">
+                    <div class="customer-info">
+                        <div class="customer-details">
+                            <input type="checkbox" ${selectedCustomers.has(i) ? 'checked' : ''} onchange="toggleCustomer(${i})">
+                            <div>
+                                <div class="customer-name">${c.name}</div>
+                                <div class="customer-email">${c.email}</div>
+                                <div class="country-info">${c.country} • ${countryToLanguage[c.country] || 'English'}</div>
+                            </div>
+                        </div>
+                        <div class="customer-actions" style="display: flex; align-items: center; gap: 12px;">
+                            <span class="badge ${c.memberType === 'Retail Customer' ? 'badge-retail' : 'badge-wholesale'}">
+                                ${c.memberType === 'Retail Customer' ? 'Retail' : 'Wholesale'}
+                            </span>
+                            <button class="btn btn-secondary" style="padding: 8px 16px;" onclick="previewEmail(${i})">
+                                👁️ Anteprima
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleCustomer(index) {
+            if (selectedCustomers.has(index)) {
+                selectedCustomers.delete(index);
+            } else {
+                selectedCustomers.add(index);
+            }
+            const card = document.getElementById(`card-${index}`);
+            card.className = selectedCustomers.has(index) ? 'customer-card selected' : 'customer-card';
+        }
+
+        async function previewEmail(index) {
+            const customer = customers[index];
+            document.getElementById('previewModal').classList.add('show');
+            document.getElementById('previewName').textContent = customer.name;
+            document.getElementById('previewEmail').textContent = customer.email;
+            document.getElementById('previewInfo').textContent = `Lingua: ${countryToLanguage[customer.country] || 'English'} • Tipo: ${customer.memberType}`;
+            document.getElementById('previewLoading').classList.remove('hidden');
+            document.getElementById('previewContent').classList.add('hidden');
+
+            const template = customer.memberType === 'Retail Customer' ? emailTemplates.retail : emailTemplates.wholesale;
+            const language = countryToLanguage[customer.country] || 'English';
+            
+            const emailContent = await translateEmail(template, customer.name, language);
+            
+            document.getElementById('previewContent').textContent = emailContent;
+            document.getElementById('previewLoading').classList.add('hidden');
+            document.getElementById('previewContent').classList.remove('hidden');
+        }
+
+        async function translateEmail(template, name, language) {
+            const firstName = name.split(/[,\s]+/)[0] || name;
+            
+            if (language === 'English') {
+                return template.replace('[name]', firstName);
+            }
+
+            try {
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 2000,
+                        messages: [{
+                            role: 'user',
+                            content: `Translate this email to ${language}. Keep the exact same tone, links, and emojis. Replace [name] with "${firstName}":\n\n${template}\n\nReturn ONLY the translated email, nothing else.`
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                return data.content.find(c => c.type === 'text')?.text || template.replace('[name]', firstName);
+            } catch (error) {
+                console.error('Translation error:', error);
+                return template.replace('[name]', firstName);
+            }
+        }
+
+        function closePreview() {
+            document.getElementById('previewModal').classList.remove('show');
+        }
+
+        async function sendEmails() {
+            if (!accessToken) {
+                alert('⚠️ Devi prima connettere Gmail!\n\nClicca su "Connetti Gmail" in alto a destra.');
+                return;
+            }
+
+            if (selectedCustomers.size === 0) {
+                alert('⚠️ Seleziona almeno un cliente prima di inviare!');
+                return;
+            }
+
+            if (!confirm(`🚀 Sei sicuro di voler inviare ${selectedCustomers.size} email?\n\nLe email verranno mandate dal tuo account Gmail.`)) {
+                return;
+            }
+
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            const originalText = btn.textContent;
+            btn.textContent = `Invio in corso... (0/${selectedCustomers.size})`;
+
+            let sent = 0;
+            let failed = 0;
+            const selectedArray = Array.from(selectedCustomers);
+
+            for (let i = 0; i < selectedArray.length; i++) {
+                const index = selectedArray[i];
+                try {
+                    await sendSingleEmail(customers[index]);
+                    sent++;
+                    btn.textContent = `Invio in corso... (${sent}/${selectedCustomers.size})`;
+                } catch (error) {
+                    console.error('Errore invio email:', error);
+                    failed++;
+                }
+            }
+
+            btn.disabled = false;
+            btn.textContent = originalText;
+            alert(`✅ Invio completato!\n\n✓ Inviate con successo: ${sent}\n✗ Fallite: ${failed}`);
+        }
+
+        async function sendSingleEmail(customer) {
+            const template = customer.memberType === 'Retail Customer' ? emailTemplates.retail : emailTemplates.wholesale;
+            const language = countryToLanguage[customer.country] || 'English';
+            const emailBody = await translateEmail(template, customer.name, language);
+
+            const subject = customer.memberType === 'Retail Customer' 
+                ? 'Your doTERRA 25% Discount is Waiting! 🌿'
+                : 'Welcome to the doTERRA Team! 🌿';
+
+            const message = [
+                `To: ${customer.email}`,
+                `Subject: ${subject}`,
+                'MIME-Version: 1.0',
+                'Content-Type: text/plain; charset=utf-8',
+                '',
+                emailBody
+            ].join('\r\n');
+
+            const encodedMessage = btoa(unescape(encodeURIComponent(message)))
+                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+            const response = await fetch('https://www.googleapis.com/gmail/v1/users/me/messages/send', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ raw: encodedMessage })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error('Gmail API error: ' + JSON.stringify(error));
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+    </script>
+</body>
+</html>
