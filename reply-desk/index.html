@@ -78,7 +78,7 @@ textarea{resize:vertical;min-height:120px}
   <header>
     <div>
       <h1>Reply Desk · <em id="sideTitle">Brondor</em></h1>
-      <p class="sub">Incolla la risposta di un centro massaggi, spa, wellness o yoga. Claude capisce cosa vuole e scrive la risposta migliore nella sua lingua, con l'offerta e i link del tuo lato. Tu controlli e invii.</p>
+      <p class="sub">Incolla la risposta di un centro massaggi, spa, wellness o yoga. L’AI capisce cosa vuole e scrive la risposta migliore nella sua lingua, con l'offerta e i link del tuo lato. Tu controlli e invii.</p>
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="Lato">
@@ -122,12 +122,15 @@ textarea{resize:vertical;min-height:120px}
       </div>
       <div class="actions">
         <button class="btn" type="button" id="go">Scrivi la risposta</button>
-        <button class="btn ghost" type="button" id="copyPrompt">Copia prompt per claude.ai</button>
+        <button class="btn ghost" type="button" id="copyPrompt">Copia prompt</button>
         <span class="status" id="status" role="status"></span>
       </div>
       <details class="key" id="keyBox">
-        <summary style="cursor:pointer;font-weight:600;font-size:13px">Chiave API di Claude <span class="hint" id="keyState"></span></summary>
-        <p class="hint" style="margin:0;font-size:13px">Serve per scrivere le risposte qui dentro. Si crea su console.anthropic.com → API Keys. Resta salvata solo in questo browser. Senza chiave usa "Copia prompt per claude.ai" e incollalo in una chat di Claude.</p>
+        <summary style="cursor:pointer;font-weight:600;font-size:13px">Chiave API <span class="hint" id="keyState"></span></summary>
+        <p class="hint" style="margin:0;font-size:13px">Serve una volta sola per browser: la incolli qui, resta salvata solo su questo dispositivo e non finisce mai su GitHub. <strong>DeepSeek</strong> (platform.deepseek.com → API keys) costa pochi centesimi per centinaia di risposte. In alternativa, Claude (console.anthropic.com).</p>
+        <label for="dsKey" style="margin:0">DeepSeek</label>
+        <div class="actions"><input id="dsKey" type="password" autocomplete="off" placeholder="sk-…"><button class="btn ghost" type="button" id="saveDs">Salva</button><button class="btn ghost" type="button" id="clearDs">Rimuovi</button></div>
+        <label for="apiKey" style="margin:0">Claude <span class="hint">· facoltativa, usata solo se manca DeepSeek</span></label>
         <div class="actions"><input id="apiKey" type="password" autocomplete="off" placeholder="sk-ant-…"><button class="btn ghost" type="button" id="saveKey">Salva</button><button class="btn ghost" type="button" id="clearKey">Rimuovi</button></div>
       </details>
     </section>
@@ -174,7 +177,7 @@ textarea{resize:vertical;min-height:120px}
   <div id="viewKb" hidden>
     <article class="kb" id="kbBody"></article>
   </div>
-  <p class="foot">Pagina privata di lavoro per Alessandro e Davide. Le bozze e la chiave restano solo nel tuo browser. Le risposte usano Claude Opus 5.</p>
+  <p class="foot">Pagina privata di lavoro per Alessandro e Davide. Le bozze e la chiave restano solo nel tuo browser. Le risposte usano DeepSeek V4 Pro (o Claude Opus 5 se hai inserito solo la chiave Claude).</p>
 </div>
 
 <script type="module">
@@ -205,14 +208,14 @@ Bulgaria: same kit 205.22 € vs 273.61 € singly at retail. Other countries: d
     role: "Independent dōTERRA Wellness Advocate",
     whatsapp: "+39 348 660 1210", email: "",
     langs: "Italian, English",
-    address: "Via del Dragoncello 76, Roma, Italia",
+    address: "Via del Dragoncello 76, 00126 Roma, Italia",
     markets: "United States and Canada.",
     links: [
       { market: "United States — start with a kit (25% account)", url: "https://www.doterra.com/US/en/shop?OwnerID=15958005" }
     ],
     positioning: `United States: send Davide's link when the business is ready to start with a kit; prices are shown there. Canada and any other country: no link — Davide sends the right one for their country.`,
     numbers: `No fixed numbers: kit prices are shown on the dōTERRA US site. Don't state the renewal amount. Don't mention monthly promotions or gifts unless Davide confirms them.`,
-    signature: "Davide Gennari\nIndependent dōTERRA Wellness Advocate\nWhatsApp +39 348 660 1210\nVia del Dragoncello 76, Roma, Italia"
+    signature: "Davide Gennari\nIndependent dōTERRA Wellness Advocate\nWhatsApp +39 348 660 1210\nVia del Dragoncello 76, 00126 Roma, Italia"
   }
 };
 
@@ -359,9 +362,29 @@ function parseJson(text){
   return null;
 }
 
-async function callClaude(extra){
+async function callDeepSeek(key, extra){
+  const res = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+    body: JSON.stringify({
+      model: "deepseek-v4-pro",
+      messages: [{ role: "system", content: buildSystem() }, { role: "user", content: buildUser(extra) + "\n\nReturn only the JSON object." }],
+      response_format: { type: "json_object" },
+      max_tokens: 4000
+    })
+  });
+  if (!res.ok) throw { status: res.status };
+  const data = await res.json();
+  const r = parseJson((data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "");
+  if (!r || typeof r.reply !== "string") throw { friendly: "Risposta in formato inatteso: premi di nuovo." };
+  return r;
+}
+
+async function callModel(extra){
+  const dsKey = store.get("rd_ds_key");
+  if (dsKey) return callDeepSeek(dsKey, extra);
   const key = store.get("rd_key");
-  if (!key) { $("keyBox").open = true; $("status").textContent = "Inserisci la chiave API qui sotto, oppure usa \"Copia prompt per claude.ai\"."; return null; }
+  if (!key) { $("keyBox").open = true; $("status").textContent = "Inserisci la chiave DeepSeek qui sotto, oppure usa \"Copia prompt\"."; return null; }
   const client = new Anthropic({ apiKey: key, dangerouslyAllowBrowser: true });
   const params = {
     model: "claude-opus-5", max_tokens: 16000,
@@ -388,13 +411,13 @@ async function run(extra){
   $("go").disabled = true; $("refineGo").disabled = true;
   $("status").textContent = "Claude sta leggendo e scrivendo…";
   try {
-    const r = await callClaude(extra);
+    const r = await callModel(extra);
     if (r) { showResult(r, false); $("status").textContent = "Pronta. Controlla e copia."; store.set("rd_last_" + side, JSON.stringify({ r, incoming: $("incoming").value })); }
   } catch (e) {
     const s = e && e.status;
     $("status").textContent = e && e.friendly ? e.friendly
-      : s === 401 ? "Chiave API non valida: controllala in \"Chiave API di Claude\"."
-      : s === 429 ? "Troppe richieste: riprova tra un minuto."
+      : s === 401 ? "Chiave API non valida: controllala nel riquadro \"Chiave API\"."
+      : s === 402 ? "Credito API esaurito: ricarica il conto DeepSeek o Claude." : s === 429 ? "Troppe richieste: riprova tra un minuto."
       : s >= 500 ? "Claude è momentaneamente occupato: riprova tra poco."
       : "Non riesco a contattare Claude: controlla la connessione e riprova.";
   } finally { $("go").disabled = false; $("refineGo").disabled = false; }
@@ -433,10 +456,12 @@ $("refineGo").onclick = () => { const v = $("refine").value.trim(); if (v) run(v
 $("quick").addEventListener("click", ev => { const b = ev.target.closest("[data-r]"); if (b) run(b.dataset.r); });
 $("copy").onclick = () => copyText($("reply").value, "Risposta copiata.", $("reply"));
 $("copySubj").onclick = () => copyText($("subject").value, "Oggetto copiato.", $("subject"));
-$("copyPrompt").onclick = () => copyText(buildSystem() + "\n\n---\n\n" + buildUser(null) + "\n\nWrite the reply now (plain text: subject line, then the email).", "Prompt copiato: incollalo in una chat su claude.ai.", null);
+$("copyPrompt").onclick = () => copyText(buildSystem() + "\n\n---\n\n" + buildUser(null) + "\n\nWrite the reply now (plain text: subject line, then the email).", "Prompt copiato: incollalo in una chat di DeepSeek, Claude o ChatGPT.", null);
 $("saveKey").onclick = () => { const v = $("apiKey").value.trim(); if (v) { store.set("rd_key", v); $("apiKey").value = ""; } keyState(); };
 $("clearKey").onclick = () => { store.del("rd_key"); keyState(); };
-function keyState(){ $("keyState").textContent = store.get("rd_key") ? "· salvata" : "· non inserita"; }
+$("saveDs").onclick = () => { const v = $("dsKey").value.trim(); if (v) { store.set("rd_ds_key", v); $("dsKey").value = ""; } keyState(); };
+$("clearDs").onclick = () => { store.del("rd_ds_key"); keyState(); };
+function keyState(){ const ds = store.get("rd_ds_key"), cl = store.get("rd_key"); $("keyState").textContent = ds ? "· DeepSeek attiva" : cl ? "· Claude attiva" : "· da inserire"; if (!ds && !cl) $("keyBox").open = true; }
 
 keyState(); renderProfile(); restore();
 </script>
