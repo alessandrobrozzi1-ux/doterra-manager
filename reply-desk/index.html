@@ -166,14 +166,14 @@ const PROFILES = {
     role: "Independent dōTERRA Wellness Advocate · AromaHain",
     whatsapp: "+39 366 215 6309", email: "info@aromahain.com",
     langs: "English, Italian; German and Bulgarian in writing",
-    markets: "Europe (except Italy), UK, Ireland, Australia, New Zealand. Germany and Bulgaria are home markets.",
+    markets: "All of Europe, UK, USA, Canada, Australia, New Zealand. Germany and Bulgaria are home markets.",
     links: [
       { market: "Germany — official products at full retail price", url: "https://aromahain.com" },
       { market: "Bulgaria — official products at full retail price", url: "https://bg.aromahain.com" },
       { market: "Germany — start with the kit (25% account)", url: "https://doterra.me/vb4Hgc" },
       { market: "Bulgaria — start with the kit (25% account)", url: "https://doterra.me/qOUaCY" },
       { market: "Free guide (German / Bulgarian)", url: "https://aromahain.com/pages/duft-start · https://bg.aromahain.com/pages/duft-start" },
-      { market: "United States — only if the business is in the US", url: "https://www.doterra.com/US/en/shop?OwnerID=15957920" }
+      { market: "United States — start with a kit (25% account)", url: "https://www.doterra.com/US/en/shop?OwnerID=15957920" }
     ],
     positioning: `Germany and Bulgaria: aromahain.com (Germany) and bg.aromahain.com (Bulgaria) are where businesses can see and buy the original dōTERRA products at the official FULL retail price, any time, no account. Writing to Alessandro is how they get 25% off everything plus personalised offers. When a German or Bulgarian business is ready to start, send the kit link for their country.`,
     numbers: `Germany: Family Essentials Kit (10 oils à 5 ml: Lavender, Lemon, Peppermint, Tea Tree, Oregano, Frankincense, Deep Blue, dōTERRA Air, ZenGest, On Guard) + Fractionated Coconut Oil = 203.50 € as a kit vs 271.33 € bought singly at retail. Retail → with account (approx.): Lavender 15 ml 49.33 → 37.00 €; Peppermint 41.00 → 30.75 €; Frankincense 127.33 → 95.50 €; Fractionated Coconut Oil 115 ml 25.67 → 19.25 €. A practice spending ~250 €/month on dōTERRA saves ~62 €/month, ~750 €/year. Renewal from year two in Europe: 15 € + VAT (includes a free 15 ml Peppermint).
@@ -186,11 +186,11 @@ Bulgaria: same kit 205.22 € vs 273.61 € singly at retail. Other countries: d
     whatsapp: "+39 348 660 1210", email: "",
     langs: "Italian, English",
     address: "Via del Dragoncello 76, 00126 Roma, Italia",
-    markets: "United States and Canada.",
+    markets: "United States, Canada and all of Europe.",
     links: [
       { market: "United States — start with a kit (25% account)", url: "https://www.doterra.com/US/en/shop?OwnerID=15958005" }
     ],
-    positioning: `United States: send Davide's link when the business is ready to start with a kit; prices are shown there. Canada and any other country: no link — Davide sends the right one for their country.`,
+    positioning: `United States: send Davide's link when the business is ready to start with a kit; prices are shown there. Canada, Europe and any other country: no link in the reply — say Davide will send the right link for their country (dōTERRA accounts are per country) and ask them to confirm the country.`,
     numbers: `No fixed numbers: kit prices are shown on the dōTERRA US site. Don't state the renewal amount. Don't mention monthly promotions or gifts unless Davide confirms them.`,
     signature: "Davide Gennari\nIndependent dōTERRA Wellness Advocate\nWhatsApp +39 348 660 1210\nVia del Dragoncello 76, 00126 Roma, Italia"
   }
@@ -204,6 +204,15 @@ const OFFER = (p) => `THE "STUDIO START" OFFER (lead with it; make yes the easy 
 5. Direct WhatsApp line to ${p.name.split(" ")[0]} for 12 months, answers within 24 hours.
 6. Personalised offers for their volume.
 Zero risk: no selling, no minimum order, no monthly obligation. The plan is free; if the kit isn't right for them, ${p.name.split(" ")[0]} says so and they lose nothing.`;
+
+const PRODUCTS = `WHICH KIT FOR WHICH BUSINESS (recommend ONE, by segment)
+- Massage studios / bodywork: AromaTouch Technique Kit (8 oils à 5 ml + fractionated coconut oil) — lets them add a signature aroma massage treatment to their menu (the AromaTouch Training Kit includes the official course). Add Deep Blue (Deep Blue Kit or Deep Blue Rub) — a cooling rub popular in sports and deep-tissue massage — and fractionated coconut oil as carrier.
+- Day spas, hotel spas, wellness centres: Family Essentials Kit (10 oils à 5 ml) + a diffuser for the rooms; AromaTouch Technique Kit for treatment rooms.
+- Yoga and Pilates studios: dōTERRA Yoga Collection (Anchor, Align, Arise) + Family Essentials Kit + a diffuser for classes.
+- Retreat organisers: Family Essentials Kit + diffusers + Yoga Collection.
+How to start: they enroll with a kit and add AromaTouch / Deep Blue / diffuser to the SAME first order, already at wholesale. The AromaTouch angle: not only a saving, a new treatment they can offer their clients.
+German retail prices (Germany only; elsewhere name the kit, no price): AromaTouch Technique Kit 189.67 €; AromaTouch Training Kit incl. course 379 €; Deep Blue Kit 172.66 €; Deep Blue Rub 120 ml 60.68 €; Family Essentials Kit 227.67 € (203.50 € as enrollment kit with coconut oil); Yoga Collection 92.33 €; Petal Diffuser 72.67 €; Fractionated coconut oil 115 ml 25.67 €. With the account roughly 25% less.
+Deep Blue wording: "cooling", "used in sports and deep-tissue massage" — never pain relief or any health effect.`;
 
 const RULES = `REPLY RULES:
 - Always "independent dōTERRA Wellness Advocate", never dōTERRA itself.
@@ -264,6 +273,8 @@ function renderKb(){
     <h3>Posizionamento e link</h3><p>${esc(p.positioning)}</p>
     <ul>${p.links.map(l => `<li><strong>${esc(l.market)}</strong>: <code>${esc(l.url)}</code></li>`).join("")}</ul>
     <h3>L'offerta "Studio Start"</h3><p>${esc(offer[0])}</p><ol>${offer.slice(1,7).map(x => `<li>${esc(x.replace(/^\d+\.\s*/,""))}</li>`).join("")}</ol><p>${esc(offer.slice(7).join(" "))}</p>
+    <h3>Kit per tipo di centro</h3><p>${esc(PRODUCTS).replace(/
+/g,"<br>")}</p>
     <h3>Numeri che si possono dire</h3><p>${esc(p.numbers).replace(/\n/g,"<br>")}</p>
     <h3>Come rispondere</h3><ul>${RULES.split("\n").slice(1).map(x => `<li>${esc(x.replace(/^- /,""))}</li>`).join("")}</ul>
     <h3>Firma</h3><p><code>${esc(p.signature).replace(/\n/g,"<br>")}</code></p>`;
@@ -304,6 +315,8 @@ ${OFFER(p)}
 
 NUMBERS YOU MAY USE
 ${p.numbers}
+
+${PRODUCTS}
 
 ${RULES}
 
@@ -425,7 +438,7 @@ function restore(){
   else {
     const ex = JSON.parse(JSON.stringify(EXAMPLE.result));
     ex.reply = ex.reply.replace(/Alessandro\nAromahain[\s\S]*$/, PROFILES.seppia.signature);
-    ex.next_step = "La Spagna non è nel tuo mercato (USA e Canada): passa il contatto ad Alessandro.";
+    ex.next_step = "Per la Spagna serve il tuo link di iscrizione Europa: prendilo dal back office dōTERRA prima di mandare prezzi.";
     $("incoming").value = EXAMPLE.incoming.replace("Hi Alessandro", "Hi Davide");
     showResult(ex, true);
   }
