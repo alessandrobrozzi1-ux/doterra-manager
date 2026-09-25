@@ -32,8 +32,12 @@ h1 em{color:var(--accent);font-style:italic}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--paper)}
 button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .controls{display:flex;flex-wrap:wrap;gap:8px}
-.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:18px;align-items:start}
-@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.one{display:grid;gap:16px;max-width:760px;width:100%;margin:0 auto}
+.big{font:600 15px Manrope,sans-serif;color:var(--accent)}
+.big-btn{padding:13px 22px;font-size:15px}
+.opts{font-size:13px;color:var(--muted);display:grid;gap:8px}
+.opts summary{cursor:pointer;font-weight:600}
+header{max-width:760px;width:100%;margin:0 auto}
 .panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:grid;gap:14px}
 .profile{background:var(--accent-soft);border-color:transparent}
 .profile h2{margin:0;font:400 24px/1.1 "Instrument Serif",Georgia,serif}
@@ -78,7 +82,7 @@ textarea{resize:vertical;min-height:120px}
   <header>
     <div>
       <h1>Reply Desk · <em id="sideTitle">Brondor</em></h1>
-      <p class="sub">Incolla la risposta di un centro massaggi, spa, wellness o yoga. L’AI capisce cosa vuole e scrive la risposta migliore nella sua lingua, con l'offerta e i link del tuo lato. Tu controlli e invii.</p>
+      <p class="sub">Incolli l'email del centro, premi un pulsante, copi la risposta e la invii da Origami.</p>
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="Lato">
@@ -92,92 +96,65 @@ textarea{resize:vertical;min-height:120px}
     </div>
   </header>
 
-  <div id="viewReply" class="grid">
-    <section class="panel" aria-label="Messaggio ricevuto">
-      <div class="panel profile" id="profileCard"></div>
-      <div>
-        <label for="incoming">Email ricevuta <span class="hint">· incolla tutto, anche la firma</span></label>
-        <textarea id="incoming"></textarea>
-      </div>
-      <div class="row">
-        <div>
-          <label for="country">Paese del centro</label>
-          <select id="country">
-            <option value="">Capiscilo dall'email</option>
-            <option>Germany</option><option>Bulgaria</option><option>United States</option><option>Canada</option>
-            <option>United Kingdom</option><option>Ireland</option><option>Spain</option><option>Portugal</option><option>France</option><option>Netherlands</option><option>Belgium</option><option>Austria</option><option>Switzerland</option><option>Poland</option><option>Greece</option><option>Romania</option><option>Australia</option><option>New Zealand</option><option>Italy</option><option>Other</option>
-          </select>
-        </div>
-        <div>
-          <label for="biz">Tipo di attività</label>
-          <select id="biz">
-            <option value="">Capiscilo dall'email</option>
-            <option>Massage studio</option><option>Day spa / hotel spa</option><option>Wellness centre</option><option>Yoga studio</option><option>Pilates studio</option><option>Ayurveda / holistic practice</option><option>Retreat organiser</option><option>Beauty studio</option>
-          </select>
-        </div>
-      </div>
-      <div>
-        <label for="sent">Il nostro primo messaggio <span class="hint">· facoltativo</span></label>
-        <textarea id="sent" style="min-height:80px" placeholder="Incolla il messaggio mandato da Origami, se ce l'hai."></textarea>
-      </div>
+  <div id="viewReply" class="one">
+    <section class="panel">
+      <label for="incoming" class="big">1 · Incolla l'email che ti hanno risposto</label>
+      <textarea id="incoming" placeholder="Incolla qui tutta l'email, anche la firma."></textarea>
       <div class="actions">
-        <button class="btn" type="button" id="go">Scrivi la risposta</button>
-        <button class="btn ghost" type="button" id="copyPrompt">Copia prompt</button>
+        <button class="btn big-btn" type="button" id="go">2 · Scrivi la risposta</button>
         <span class="status" id="status" role="status"></span>
       </div>
-      <details class="key" id="keyBox">
-        <summary style="cursor:pointer;font-weight:600;font-size:13px">Chiave API <span class="hint" id="keyState"></span></summary>
-        <p class="hint" style="margin:0;font-size:13px">Serve una volta sola per browser: la incolli qui, resta salvata solo su questo dispositivo e non finisce mai su GitHub. <strong>DeepSeek</strong> (platform.deepseek.com → API keys) costa pochi centesimi per centinaia di risposte. In alternativa, Claude (console.anthropic.com).</p>
+      <details class="opts">
+        <summary>Opzioni (di solito non servono)</summary>
+        <div class="row">
+          <div><label for="country">Paese</label><select id="country"><option value="">Lo capisce da solo</option><option>Germany</option><option>Bulgaria</option><option>United States</option><option>Canada</option><option>United Kingdom</option><option>Ireland</option><option>Spain</option><option>Portugal</option><option>France</option><option>Netherlands</option><option>Belgium</option><option>Austria</option><option>Switzerland</option><option>Poland</option><option>Greece</option><option>Romania</option><option>Australia</option><option>New Zealand</option><option>Italy</option><option>Other</option></select></div>
+          <div><label for="biz">Attività</label><select id="biz"><option value="">La capisce da sola</option><option>Massage studio</option><option>Day spa / hotel spa</option><option>Wellness centre</option><option>Yoga studio</option><option>Pilates studio</option><option>Ayurveda / holistic practice</option><option>Retreat organiser</option><option>Beauty studio</option></select></div>
+        </div>
+        <label for="sent">Il nostro primo messaggio</label>
+        <textarea id="sent" style="min-height:70px"></textarea>
+        <button class="btn ghost" type="button" id="copyPrompt">Copia prompt (senza chiave API)</button>
+      </details>
+      <details class="opts" id="keyBox">
+        <summary>Chiave API <span class="hint" id="keyState"></span></summary>
+        <p class="hint" style="margin:0;font-size:13px">Una volta sola per browser. Resta solo su questo dispositivo. DeepSeek: platform.deepseek.com → API keys.</p>
         <label for="dsKey" style="margin:0">DeepSeek</label>
         <div class="actions"><input id="dsKey" type="password" autocomplete="off" placeholder="sk-…"><button class="btn ghost" type="button" id="saveDs">Salva</button><button class="btn ghost" type="button" id="clearDs">Rimuovi</button></div>
-        <label for="apiKey" style="margin:0">Claude <span class="hint">· facoltativa, usata solo se manca DeepSeek</span></label>
+        <label for="apiKey" style="margin:0">Claude <span class="hint">· facoltativa</span></label>
         <div class="actions"><input id="apiKey" type="password" autocomplete="off" placeholder="sk-ant-…"><button class="btn ghost" type="button" id="saveKey">Salva</button><button class="btn ghost" type="button" id="clearKey">Rimuovi</button></div>
       </details>
     </section>
 
-    <section class="panel" aria-label="Risposta suggerita">
+    <section class="panel" aria-label="Risposta">
       <div class="out-head">
+        <span class="big">3 · Copia e invia</span>
         <span class="example" id="exampleTag">Esempio</span>
         <span class="pill" id="intent">Interessato</span>
         <span class="pill" id="lang">EN</span>
       </div>
       <p class="summary" id="summary"></p>
-      <div>
-        <label for="subject">Oggetto</label>
-        <input id="subject">
-      </div>
-      <div>
-        <label for="reply">Risposta <span class="hint">· modificala pure prima di copiarla</span></label>
-        <textarea id="reply"></textarea>
-      </div>
+      <input id="subject" aria-label="Oggetto">
+      <textarea id="reply" aria-label="Risposta"></textarea>
       <div class="actions">
-        <button class="btn" type="button" id="copy">Copia risposta</button>
+        <button class="btn big-btn" type="button" id="copy">Copia risposta</button>
         <button class="btn ghost" type="button" id="copySubj">Copia oggetto</button>
         <span class="status" id="copyStatus" role="status"></span>
       </div>
       <div class="next" id="next"></div>
-      <div>
-        <label for="refine">Cambia qualcosa</label>
-        <div class="chips" id="quick">
-          <button class="chip" type="button" data-r="Make it shorter, max 80 words.">Più corta</button>
-          <button class="chip" type="button" data-r="Make it warmer and more personal, still professional.">Più calda</button>
-          <button class="chip" type="button" data-r="Make it more formal.">Più formale</button>
-          <button class="chip" type="button" data-r="Close with a clear proposal for a 10-minute call or WhatsApp chat this week.">Proponi una call</button>
-          <button class="chip" type="button" data-r="Push the Studio Start offer harder: restate the stack and the zero-risk, still honest.">Offerta più forte</button>
-          <button class="chip" type="button" data-r="Write the same reply in Italian.">In italiano</button>
-        </div>
-        <div class="actions" style="margin-top:8px">
-          <input id="refine" placeholder="Es. chiede il prezzo per 3 terapisti, rispondi su quello">
-          <button class="btn ghost" type="button" id="refineGo">Riscrivi</button>
-        </div>
+      <div class="chips" id="quick">
+        <button class="chip" type="button" data-r="Make it shorter, max 80 words.">Più corta</button>
+        <button class="chip" type="button" data-r="Push the Studio Start offer harder: restate the stack and the zero-risk, still honest.">Offerta più forte</button>
+        <button class="chip" type="button" data-r="Close with a clear proposal for a 10-minute call or WhatsApp chat this week.">Proponi una call</button>
+        <button class="chip" type="button" data-r="Write the same reply in Italian so I can read it.">Leggila in italiano</button>
       </div>
+      <div class="actions"><input id="refine" placeholder="Altro da cambiare? Scrivilo qui"><button class="btn ghost" type="button" id="refineGo">Riscrivi</button></div>
     </section>
   </div>
 
   <div id="viewKb" hidden>
+    <div class="panel profile" id="profileCard" style="max-width:860px;margin-bottom:14px"></div>
     <article class="kb" id="kbBody"></article>
   </div>
-  <p class="foot">Pagina privata di lavoro per Alessandro e Davide. Le bozze e la chiave restano solo nel tuo browser. Le risposte usano DeepSeek V4 Pro (o Claude Opus 5 se hai inserito solo la chiave Claude).</p>
+  <p class="foot" style="max-width:760px;margin:0 auto">Pagina privata di lavoro per Alessandro e Davide. Le bozze e la chiave restano solo nel tuo browser. Le risposte usano DeepSeek V4 Pro (o Claude Opus 5 se hai inserito solo la chiave Claude).</p>
 </div>
 
 <script type="module">
