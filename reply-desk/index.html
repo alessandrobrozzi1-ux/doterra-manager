@@ -273,8 +273,7 @@ function renderKb(){
     <h3>Posizionamento e link</h3><p>${esc(p.positioning)}</p>
     <ul>${p.links.map(l => `<li><strong>${esc(l.market)}</strong>: <code>${esc(l.url)}</code></li>`).join("")}</ul>
     <h3>L'offerta "Studio Start"</h3><p>${esc(offer[0])}</p><ol>${offer.slice(1,7).map(x => `<li>${esc(x.replace(/^\d+\.\s*/,""))}</li>`).join("")}</ol><p>${esc(offer.slice(7).join(" "))}</p>
-    <h3>Kit per tipo di centro</h3><p>${esc(PRODUCTS).replace(/
-/g,"<br>")}</p>
+    <h3>Kit per tipo di centro</h3><p>${esc(PRODUCTS).replace(/\n/g,"<br>")}</p>
     <h3>Numeri che si possono dire</h3><p>${esc(p.numbers).replace(/\n/g,"<br>")}</p>
     <h3>Come rispondere</h3><ul>${RULES.split("\n").slice(1).map(x => `<li>${esc(x.replace(/^- /,""))}</li>`).join("")}</ul>
     <h3>Firma</h3><p><code>${esc(p.signature).replace(/\n/g,"<br>")}</code></p>`;
