@@ -371,7 +371,7 @@ async function callDeepSeek(key, extra){
 }
 
 // URL del Worker Cloudflare che custodisce la chiave DeepSeek (vuoto finché non è pubblicato).
-const WORKER_URL = "";
+const WORKER_URL = "https://reply-desk.alessandrobrozzi1.workers.dev";
 
 async function callWorker(extra){
   const res = await fetch(WORKER_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system: buildSystem(), user: buildUser(extra) }) });
