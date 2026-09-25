@@ -357,7 +357,20 @@ async function callDeepSeek(key, extra){
   return r;
 }
 
+// URL del Worker Cloudflare che custodisce la chiave DeepSeek (vuoto finché non è pubblicato).
+const WORKER_URL = "";
+
+async function callWorker(extra){
+  const res = await fetch(WORKER_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system: buildSystem(), user: buildUser(extra) }) });
+  if (!res.ok) throw { status: res.status };
+  const data = await res.json();
+  const r = parseJson((data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "");
+  if (!r || typeof r.reply !== "string") throw { friendly: "Risposta in formato inatteso: premi di nuovo." };
+  return r;
+}
+
 async function callModel(extra){
+  if (WORKER_URL) return callWorker(extra);
   const dsKey = store.get("rd_ds_key");
   if (dsKey) return callDeepSeek(dsKey, extra);
   const key = store.get("rd_key");
@@ -438,7 +451,7 @@ $("saveKey").onclick = () => { const v = $("apiKey").value.trim(); if (v) { stor
 $("clearKey").onclick = () => { store.del("rd_key"); keyState(); };
 $("saveDs").onclick = () => { const v = $("dsKey").value.trim(); if (v) { store.set("rd_ds_key", v); $("dsKey").value = ""; } keyState(); };
 $("clearDs").onclick = () => { store.del("rd_ds_key"); keyState(); };
-function keyState(){ const ds = store.get("rd_ds_key"), cl = store.get("rd_key"); $("keyState").textContent = ds ? "· DeepSeek attiva" : cl ? "· Claude attiva" : "· da inserire"; if (!ds && !cl) $("keyBox").open = true; }
+function keyState(){ if (WORKER_URL) { $("keyBox").hidden = true; return; } const ds = store.get("rd_ds_key"), cl = store.get("rd_key"); $("keyState").textContent = ds ? "· DeepSeek attiva" : cl ? "· Claude attiva" : "· da inserire"; if (!ds && !cl) $("keyBox").open = true; }
 
 keyState(); renderProfile(); restore();
 </script>
