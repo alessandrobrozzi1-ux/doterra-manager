@@ -411,7 +411,7 @@ async function callModel(extra){
 async function run(extra){
   if (!$("incoming").value.trim()) { $("status").textContent = "Incolla prima l'email ricevuta."; $("incoming").focus(); return; }
   $("go").disabled = true; $("refineGo").disabled = true;
-  $("status").textContent = "Claude sta leggendo e scrivendo…";
+  $("status").textContent = "Sto scrivendo la risposta…";
   try {
     const r = await callModel(extra);
     if (r) { showResult(r, false); $("status").textContent = "Pronta. Controlla e copia."; store.set("rd_last_" + side, JSON.stringify({ r, incoming: $("incoming").value })); }
@@ -420,8 +420,8 @@ async function run(extra){
     $("status").textContent = e && e.friendly ? e.friendly
       : s === 401 ? "Chiave API non valida: controllala nel riquadro \"Chiave API\"."
       : s === 402 ? "Credito API esaurito: ricarica il conto DeepSeek o Claude." : s === 429 ? "Troppe richieste: riprova tra un minuto."
-      : s >= 500 ? "Claude è momentaneamente occupato: riprova tra poco."
-      : "Non riesco a contattare Claude: controlla la connessione e riprova.";
+      : s >= 500 ? "Il servizio è momentaneamente occupato: riprova tra poco."
+      : "Non riesco a contattare il servizio: controlla la connessione e riprova.";
   } finally { $("go").disabled = false; $("refineGo").disabled = false; }
 }
 
